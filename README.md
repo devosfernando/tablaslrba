@@ -42,14 +42,16 @@ El proyecto está estructurado en tres fases secuenciales:
 
 ## ⚙️ Configuración
 
-Antes de ejecutar los scripts, asegúrate de configurar las variables de entorno o constantes dentro del módulo `config/constants.py`:
+Antes de ejecutar los scripts, asegúrate de configurar las variables de entorno o constantes dentro del módulo `config/constants.py` y `.env`:
 
-- `GHE_DOMAIN`: Dominio de tu instancia de GitHub Enterprise. (OPCIONAL)
-- `GHE_TOKEN`: Token de acceso personal con permisos para consultar la API de GHE. (OBLIGATORIO)
-- `COOKIE_AUTH`: Cookie de acceso en lrba, se e ncuentra en cualquier header de petición en la consola de LRBA. (OBLIGATORIO)
+- `GHE_TOKEN`: Token de acceso personal con permisos para consultar la API de GHE. (OBLIGATORIO)(debe ser declarados y generados en el archivo .env que debemos generar manualmente en la raiz del proyecto)`.env`
+
+- `COOKIE_AUTH`: Cookie de acceso en lrba, se e ncuentra en cualquier header de petición en la consola de LRBA. (OBLIGATORIO) (debe ser declarados y generados en el archivo .env que debemos generar manualmente en la raiz del proyecto)`.env`
+
+- `GHE_DOMAIN`: Dominio de tu instancia de GitHub Enterprise. (OPCIONAL) `config/constants.py`
+
 - `ORGANIZACIONES_CONOCIDAS`: Lista de organizaciones en GHE donde se buscarán los repositorios. (OPCIONAL)
-- `LISTA_UAS`: Lista de Acrónimos de Unidades de Aplicación a auditar. (OPCIONAL)
-- Configuración de certificados o credenciales de la API base.
+- `LISTA_UAS`: Lista de Acrónimos de Unidades de Aplicación a auditar. (OPCIONAL) `config/constants.py`
 
 ---
 
