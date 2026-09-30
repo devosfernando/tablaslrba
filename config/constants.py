@@ -1,4 +1,7 @@
 import re
+from dotenv import load_dotenv
+import os
+load_dotenv()
 
 # 0. INICIO-CONFIGURACIONES GENERALES ---------------------
 
@@ -24,7 +27,8 @@ RESULT_REPORT_FILE = TARGET_REPORT + "Reporte_Rastreo_JDBC_PRO.xlsx"
 # 1. INICIO - CONFIGURACIÓN GITHUB
 
 GHE_DOMAIN = "bbva.ghe.com"
-GHE_TOKEN = ""
+
+GHE_TOKEN = os.getenv("GHE_TOKEN")
 
 ORGANIZACIONES_CONOCIDAS = ["platform", "ng-batch", "architecture"]
 
@@ -62,7 +66,7 @@ REGEX_HOST_TABLE = re.compile(r'[\'"](BGDT[A-Z0-9]{3}|T_[A-Z0-9_]{3,})[\'"]', re
 
 URL_BASE = "https://bbva-ether-console-front.appspot.com/c/s/ecs-central/gov/v3/reports/versions"
 
-COOKIE_AUTH = ""
+COOKIE_AUTH = os.getenv("COOKIE")
 
 
 LISTA_UAS = [
