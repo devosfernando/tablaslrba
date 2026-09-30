@@ -2,6 +2,6 @@ from scripts import analizar, request, result
 from config import constants
 
 
-# request.initialize()
+request.initialize()
 analizar.initialize()
 result.initialize()
