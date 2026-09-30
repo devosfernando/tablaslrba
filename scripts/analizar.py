@@ -6,7 +6,7 @@ import pandas as pd
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 import urllib3
-from config.constants import GHE_DOMAIN, GHE_TOKEN, ORGANIZACIONES_CONOCIDAS, REQUEST_RESULT_FILE, ANALIZAR_RESULT_FILE
+from config.constants import GHE_DOMAIN, GHE_TOKEN, ORGANIZACIONES_CONOCIDAS, ANALIZAR_BD_FILE, REQUEST_RESULT_FILE, ANALIZAR_RESULT_FILE
 
 # Silenciar advertencias de SSL corporativo
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)

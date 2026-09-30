@@ -29,7 +29,7 @@ def obtener_y_depurar_componentes_pro(lista_uas):
 
     while True:
         params = construir_query_params(lista_uas, page=pagina_actual, page_size=pageSize)
-        
+        print(HEADERS)
         response = requests.get(URL_BASE, headers=HEADERS, params=params, verify=False)
 
         if response.status_code != 200:
@@ -46,7 +46,7 @@ def obtener_y_depurar_componentes_pro(lista_uas):
         try:
             data_json = response.json()
         except requests.exceptions.JSONDecodeError:
-            print(f"❌ Error: La respuesta recibida no es un JSON válido.")
+            print(f"❌ Error: Cookie de sesion y/o sesión expirada.")
             print(f"🔍 Primeros 300 caracteres de la respuesta:\n{response.text[:300]}")
             break
 

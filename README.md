@@ -46,7 +46,7 @@ Antes de ejecutar los scripts, asegúrate de configurar las variables de entorno
 
 - `GHE_TOKEN`: Token de acceso personal con permisos para consultar la API de GHE. (OBLIGATORIO)(debe ser declarados y generados en el archivo .env que debemos generar manualmente en la raiz del proyecto)`.env`
 
-- `COOKIE_AUTH`: Cookie de acceso en lrba, se e ncuentra en cualquier header de petición en la consola de LRBA. (OBLIGATORIO) (debe ser declarados y generados en el archivo .env que debemos generar manualmente en la raiz del proyecto)`.env`
+- `COOKIE_AUTH`: Cookie de acceso en la consola ether, se e ncuentra en cualquier header de petición en la consola de LRBA. (OBLIGATORIO) (debe ser declarados y generados en el archivo .env que debemos generar manualmente en la raiz del proyecto)`.env`
 
 - `GHE_DOMAIN`: Dominio de tu instancia de GitHub Enterprise. (OPCIONAL) `config/constants.py`
 

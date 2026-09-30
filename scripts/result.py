@@ -1,12 +1,13 @@
 import json
 import re
+import os
 import time
 import requests
 import pandas as pd
+import urllib3
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
-import urllib3
-from config.constants import GHE_DOMAIN, GHE_TOKEN, ORGANIZACIONES_CONOCIDAS, REQUEST_RESULT_FILE, ANALIZAR_RESULT_FILE, ANALIZAR_BD_FILE,PALABRAS_RESERVADAS, REGEX_STRICT_FROM, REGEX_SCHEMA_REPLACE, REGEX_HOST_TABLE
+from config.constants import GHE_DOMAIN, GHE_TOKEN, SUFIJOS_COLUMNAS,RESULT_INVENTARIO, RESULT_REPORT_FILE, ORGANIZACIONES_CONOCIDAS, REQUEST_RESULT_FILE, ANALIZAR_RESULT_FILE, ANALIZAR_BD_FILE, RESULT_INVENTARIO, PALABRAS_RESERVADAS, REGEX_STRICT_FROM, REGEX_SCHEMA_REPLACE, REGEX_HOST_TABLE
 
 
 # Silenciar advertencias de SSL corporativo
@@ -142,6 +143,13 @@ def extraer_tablas_estrictas(contenidos_repo):
     return sorted(list(tablas))
 
 def ejecutar_fase_2(ruta_json_fase1, ruta_excel_salida):
+    # 1. Obtener la carpeta donde se debe guardar el archivo
+    directorio_salida = os.path.dirname(ruta_excel_salida)
+
+    # 2. Crear la carpeta de salida si no existe (y si no es una ruta vacía/relativa simple)
+    if directorio_salida:
+        os.makedirs(directorio_salida, exist_ok=True)
+        
     with open(ruta_json_fase1, 'r', encoding='utf-8') as f:
         data_json = json.load(f)
 
@@ -205,11 +213,11 @@ def ejecutar_fase_2(ruta_json_fase1, ruta_excel_salida):
     df = pd.DataFrame(resultados_finales)
     df.to_excel(ruta_excel_salida, index=False, sheet_name="Rastreo_NativeQuery_Limpio")
 
-    with open("inventario_native_query_tablas_limpio.json", "w", encoding="utf-8") as f:
+    with open(RESULT_INVENTARIO, "w", encoding="utf-8") as f:
         json.dump({"data": resultados_finales}, f, indent=4)
 
     print(f"\n✅ PROCESO FINALIZADO:")
     print(f"  - Reporte limpio generado en Excel: '{ruta_excel_salida}'")
 
-if __name__ == "__main__":
+def initialize():
     ejecutar_fase_2(ANALIZAR_BD_FILE, RESULT_REPORT_FILE)
