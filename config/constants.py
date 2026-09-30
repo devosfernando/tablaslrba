@@ -18,7 +18,7 @@ ANALIZAR_BD_FILE = SOURCE_TMP + "jobs_confirmados_bd.json"
 ANALIZAR_RESULT_FILE = SOURCE_TMP + "Reporte_Fase1_Componentes_BD.xlsx"
 
 # result.py files
-RESULT_REPORT_FILE = TARGET_REPORT + "Reporte_Rastreo_JDBC_PRO.xlsx"
+RESULT_REPORT_FILE = TARGET_REPORT + "Reporte_Rastreo_Fuentes_LRBA_PRO.xlsx"
 
 RESULT_INVENTARIO = SOURCE_TMP + "inventario_native_query_tablas_limpio.json"
 # 0. FIN-CONFIGURACIONES GENERALES ------------------------
@@ -70,7 +70,13 @@ COOKIE_AUTH = os.getenv("COOKIE")
 
 
 LISTA_UAS = [
-    "APIC", "BBGH", "BLOG", "CBGH"
+ "APIC", "BBGH", "BLOG", "CBGH", "CBGU", "CBTQ", "CCOG", "CDIV", "CGMP",
+    "CHVI", "CLBE", "CLNE", "CMCT", "CMOL", "CMTC", "CPAD", "CPDE", "CPME",
+    "CQRC", "CQRR", "CRCH", "CREC", "CSAN", "CSLI", "CTSU", "CUBH", "CUGH",
+    "CUSU", "CV7H", "CZXH", "J6G7", "JV0D", "KAPI", "KARC", "KBGE", "KBTQ",
+    "KCMC", "KCNC", "KCNS", "KCOG", "KCSN", "KLNE", "KMOL", "KPAD", "KPDA",
+    "KPDR", "KREC", "KSAN", "KSKR", "KTRA", "KUSU", "L1WI", "LRBA", "MCRR",
+    "OCON", "OPEI", "W1BD"
 ]
 
 HEADERS = {
