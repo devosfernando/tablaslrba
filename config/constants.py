@@ -21,6 +21,11 @@ ANALIZAR_RESULT_FILE = SOURCE_TMP + "Reporte_Fase1_Componentes_BD.xlsx"
 RESULT_REPORT_FILE = TARGET_REPORT + "Reporte_Rastreo_Fuentes_LRBA_PRO.xlsx"
 
 RESULT_INVENTARIO = SOURCE_TMP + "inventario_native_query_tablas_limpio.json"
+DESCARGA_TABLAS_FILE = SOURCE_TMP +  "DESCARGA DE TABLAS LRBA.xlsx"
+
+
+
+
 # 0. FIN-CONFIGURACIONES GENERALES ------------------------
 
 

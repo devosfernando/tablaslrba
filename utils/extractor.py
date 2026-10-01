@@ -67,11 +67,10 @@ def extraer_tablas_estrictas(contenidos_repo):
 
 
 # ==============================================================================
-# 2. UTILIDADES DE ARCHIVOS (PARQUET, CSV, ETC.)
+# 2. MOTOR RESOLUTOR GENÉRICO DE CLASES Y PROPIEDADES
 # ==============================================================================
 
 def extraer_parametro_balanceado(texto, patron_inicio):
-    """Extrae el contenido entre paréntesis de forma balanceada evitando cortes prematuros."""
     idx = texto.find(patron_inicio)
     if idx == -1:
         return ""
@@ -89,38 +88,43 @@ def extraer_parametro_balanceado(texto, patron_inicio):
     return texto[start:].strip()
 
 
-def resolver_expresion_recursiva(expresion, contenidos_repo, depth=0):
-    """Rastrea de forma recursiva métodos, constantes y estructuras hasta obtener el nombre en limpio."""
+def resolver_expresion_generica(expresion, contenidos_repo, depth=0):
     if not expresion or depth > 8:
         return expresion
 
     exp_limpia = expresion.strip(' "\'\t\r\n')
 
-    # 1. String literal entre comillas "..."
+    # 1. String literal puro entre comillas "..."
     if (exp_limpia.startswith('"') and exp_limpia.endswith('"')) or (exp_limpia.startswith("'") and exp_limpia.endswith("'")):
         return exp_limpia.strip(' "\'')
 
-    # 2. Rastrear constantes dentro de llamadas complejas (Optional, JobParams, String.format)
-    if any(k in exp_limpia for k in ["Optional", "JobParams", "String.format", "String.join", "append"]):
-        const_refs = re.findall(r'Constants\.([A-Za-z0-9_]+)', exp_limpia)
-        for c_name in const_refs:
-            if any(kw in c_name for kw in ["PHYSICAL", "NAME", "DEFAULT", "FILE", "PARAM"]):
-                res = resolver_expresion_recursiva(f"Constants.{c_name}", contenidos_repo, depth + 1)
-                if res and res != f"Constants.{c_name}":
+    # 2. Búsqueda directa de constante tipo Constants.VARIABLE o VARIABLE
+    const_refs = re.findall(r'(?:([A-Za-z0-9_]+)\.)?([A-Za-z0-9_]+)', exp_limpia)
+    for clase_or_var, var_name in const_refs:
+        if var_name in ["getOrThrow", "getDefault", "getProperty", "get", "orElseThrow", "builder", "build"]:
+            continue
+            
+        for path, codigo in contenidos_repo.items():
+            pattern_const = rf'(?:final\s+String|String)\s+{var_name}\s*=\s*([^;]+);'
+            match_c = re.search(pattern_const, codigo)
+            if match_c:
+                val_c = match_c.group(1).strip(' "')
+                res = resolver_expresion_generica(val_c, contenidos_repo, depth + 1)
+                if res and not res.startswith(var_name):
                     return res
 
-    # 3. Invocación .getDefault(...) / .getProperty(...) / .get(...)
-    get_default_match = re.search(r'\.(?:getDefault|getProperty|get)\s*\((.*?)\)', exp_limpia, flags=re.DOTALL)
+    # 3. Métodos tipo .getOrThrow(...), .getDefault(...), .getProperty(...)
+    get_default_match = re.search(r'\.(?:getOrThrow|getDefault|getProperty|get)\s*\((.*?)\)', exp_limpia, flags=re.DOTALL)
     if get_default_match:
         args_str = get_default_match.group(1)
         args = [a.strip() for a in args_str.split(',')]
         if len(args) >= 2:
             chosen_arg = args[1] if len(args) == 2 else args[-1]
-            return resolver_expresion_recursiva(chosen_arg, contenidos_repo, depth + 1)
+            return resolver_expresion_generica(chosen_arg, contenidos_repo, depth + 1)
         elif len(args) == 1 and args[0]:
-            return resolver_expresion_recursiva(args[0], contenidos_repo, depth + 1)
+            return resolver_expresion_generica(args[0], contenidos_repo, depth + 1)
 
-    # 4. Invocación a método ej: Utils.getPropertyFileBGDTCLIPhysicalName()
+    # 4. Invocaciones a métodos estáticos de clases (ej: Utils.getBtsServiceName())
     metodo_match = re.search(r'(?:[\w\.]+\.)?(\w+)\s*\(\)', exp_limpia)
     if metodo_match:
         nombre_metodo = metodo_match.group(1)
@@ -132,24 +136,17 @@ def resolver_expresion_recursiva(expresion, contenidos_repo, depth=0):
                 return_match = re.search(r'return\s+([^;]+);', cuerpo, flags=re.DOTALL)
                 if return_match:
                     retorno = return_match.group(1).strip()
-                    return resolver_expresion_recursiva(retorno, contenidos_repo, depth + 1)
-
-    # 5. Constante ej: Constants.DEFAULT_BGDTCLI_FILENAME
-    const_match = re.search(r'(?:[\w\.]+\.)?(\w+)', exp_limpia)
-    if const_match:
-        nombre_const = const_match.group(1)
-        for path, codigo in contenidos_repo.items():
-            pattern_const = rf'(?:final\s+String|String)\s+{nombre_const}\s*=\s*([^;]+);'
-            match_c = re.search(pattern_const, codigo)
-            if match_c:
-                val_c = match_c.group(1).strip(' "')
-                return resolver_expresion_recursiva(val_c, contenidos_repo, depth + 1)
+                    return resolver_expresion_generica(retorno, contenidos_repo, depth + 1)
 
     return exp_limpia
 
 
-def extraer_archivo_especifico_por_indice(contenidos_repo, indice_fuente):
-    """Aísla el bloque Nro (1..N) del Builder.java y resuelve únicamente su archivo asignado."""
+def extraer_fuente_completa_por_indice(contenidos_repo, indice_fuente):
+    resultado = {
+        "archivo": "",
+        "service_name": "N/A"
+    }
+
     for path, codigo in contenidos_repo.items():
         if not path.endswith("Builder.java"):
             continue
@@ -160,14 +157,22 @@ def extraer_archivo_especifico_por_indice(contenidos_repo, indice_fuente):
         if 0 < indice_fuente <= len(bloques):
             bloque = bloques[indice_fuente - 1]
 
+            # 1. Extraer y resolver Physical Name / Alias
             if ".physicalName(" in bloque:
                 param_phys = extraer_parametro_balanceado(bloque, ".physicalName(")
                 if param_phys:
-                    return resolver_expresion_recursiva(param_phys, contenidos_repo)
-
-            if ".alias(" in bloque:
+                    resultado["archivo"] = resolver_expresion_generica(param_phys, contenidos_repo)
+            elif ".alias(" in bloque:
                 param_alias = extraer_parametro_balanceado(bloque, ".alias(")
                 if param_alias:
-                    return resolver_expresion_recursiva(param_alias, contenidos_repo)
+                    resultado["archivo"] = resolver_expresion_generica(param_alias, contenidos_repo)
 
-    return ""
+            # 2. Extraer y resolver Service Name
+            if ".serviceName(" in bloque:
+                param_service = extraer_parametro_balanceado(bloque, ".serviceName(")
+                if param_service:
+                    resultado["service_name"] = resolver_expresion_generica(param_service, contenidos_repo)
+
+            break
+
+    return resultado
